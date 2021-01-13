@@ -31,4 +31,9 @@ export class AuthController {
       res.redirect('http://localhost:3000/');
     }
   }
+
+  @Post('/login')
+  async login(@Body() loginUserDto: LoginUserDto) {
+    return await this.authService.login(loginUserDto);
+  }
 }

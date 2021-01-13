@@ -1,5 +1,3 @@
-import { LoginUserDto } from './../users/dto/login-user.dto';
-import { CreateUserDto } from './../users/dto/create-user.dto';
 import {
   ConflictException,
   Injectable,
@@ -11,27 +9,30 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Vertificiation } from './vertification.entity';
+import { JwtService } from '@nestjs/jwt';
+import { LoginUserDto, CreateUserDto } from '../users/dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private mailerService: MailerService,
     private usersService: UsersService,
+    private jwtService: JwtService,
     @InjectRepository(Vertificiation)
     private vertificationRepository: Repository<Vertificiation>,
   ) {}
 
   async join(createUserDto: CreateUserDto) {
-    const exisitEmail = await this.usersService.findByEmail(
-      createUserDto.email,
-    );
+    const exisitEmail = await this.usersService.findOne({
+      email: createUserDto.email,
+    });
     if (exisitEmail) {
       throw new ConflictException('이미 존재하는 이메일 입니다.');
     }
 
-    const exisitNickname = await this.usersService.findByNickanme(
-      createUserDto.nickname,
-    );
+    const exisitNickname = await this.usersService.findOne({
+      nickname: createUserDto.nickname,
+    });
     if (exisitNickname) {
       throw new ConflictException('이미 존재하는 닉네임 입니다.');
     }
@@ -65,5 +66,29 @@ export class AuthService {
     await this.vertificationRepository.delete({
       token: verification.token,
     });
+  }
+
+  async validateUser(userId: string) {
+    const user = await this.usersService.findOne({ id: userId });
+
+    if (!user) {
+      return null;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = user;
+    return result;
+  }
+
+  // return access token;
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.usersService.findOne({ email: loginUserDto.email });
+
+    if (!user || !(await user.comparePassword(loginUserDto.password))) {
+      throw new UnauthorizedException();
+    }
+
+    const accessToken = this.jwtService.sign({ userId: user.id });
+    return accessToken;
   }
 }

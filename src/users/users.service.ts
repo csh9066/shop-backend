@@ -1,5 +1,4 @@
-import { UpdateUserDto } from './dto/update-user.dto';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserDto, UpdateUserDto, FindUserDto } from './dto/';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,12 +10,8 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
-  findByEmail(email: string): Promise<User> {
-    return this.userRepository.findOne({ email });
-  }
-
-  findByNickanme(nickname: string): Promise<User> {
-    return this.userRepository.findOne({ nickname });
+  findOne(findUserDto: FindUserDto): Promise<User> {
+    return this.userRepository.findOne(findUserDto);
   }
 
   create(createUserDto: CreateUserDto): Promise<User> {
