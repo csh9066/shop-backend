@@ -8,7 +8,7 @@ import { UsersService } from './../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Vertificiation } from './vertification.entity';
+import { Vertificiation } from './entities/vertification.entity';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto, CreateUserDto } from '../users/dto';
 
