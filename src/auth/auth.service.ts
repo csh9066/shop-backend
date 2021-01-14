@@ -83,13 +83,14 @@ export class AuthService {
   async login(loginUserDto: LoginUserDto) {
     const user = await this.usersService.findOne({ email: loginUserDto.email });
 
+    if (!user || !(await user.comparePassword(loginUserDto.password))) {
+      throw new UnauthorizedException('이메일이나 비밀번호가 틀렸습니다.');
+    }
+
     if (!user.verified) {
       throw new UnauthorizedException('인증되지 않은 유저입니다.');
     }
 
-    if (!user || !(await user.comparePassword(loginUserDto.password))) {
-      throw new UnauthorizedException('이메일이나 비밀번호가 틀렸습니다.');
-    }
     delete user.password;
     const token = this.jwtService.sign({ userId: user.id });
     return {
