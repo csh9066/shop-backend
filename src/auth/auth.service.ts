@@ -74,21 +74,27 @@ export class AuthService {
     if (!user) {
       return null;
     }
-
+    delete user.password;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
-    return result;
+    return user;
   }
 
   // return access token;
   async login(loginUserDto: LoginUserDto) {
     const user = await this.usersService.findOne({ email: loginUserDto.email });
 
-    if (!user || !(await user.comparePassword(loginUserDto.password))) {
-      throw new UnauthorizedException();
+    if (!user.verified) {
+      throw new UnauthorizedException('인증되지 않은 유저입니다.');
     }
 
-    const accessToken = this.jwtService.sign({ userId: user.id });
-    return accessToken;
+    if (!user || !(await user.comparePassword(loginUserDto.password))) {
+      throw new UnauthorizedException('이메일이나 비밀번호가 틀렸습니다.');
+    }
+    delete user.password;
+    const token = this.jwtService.sign({ userId: user.id });
+    return {
+      token,
+      user,
+    };
   }
 }
