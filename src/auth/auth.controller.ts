@@ -8,9 +8,12 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -35,5 +38,11 @@ export class AuthController {
   @Post('/login')
   async login(@Body() loginUserDto: LoginUserDto) {
     return await this.authService.login(loginUserDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/check')
+  check(@Req() req) {
+    return req.user;
   }
 }
